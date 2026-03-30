@@ -1,0 +1,127 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { sanityClient } from '../sanity/client';
+import { imageUrl } from '../sanity/client';
+
+interface Project {
+  _id: string;
+  name: string;
+  slug: { current: string };
+  year?: number;
+  type?: string;
+  coverImage?: { asset?: { _ref?: string } };
+}
+
+let projects: Project[] = [];
+let sanityError = false;
+
+try {
+  const projectId = import.meta.env.SANITY_PROJECT_ID;
+  if (projectId) {
+    projects = await sanityClient.fetch<Project[]>(
+      `*[_type == "project"] | order(order asc, year desc) { _id, name, slug, year, type, coverImage }`
+    );
+  }
+} catch {
+  sanityError = true;
+}
+
+const usePlaceholder = !projects || projects.length === 0;
+
+const placeholderProjects = [
+  { id: '1', name: 'project a', type: 'logo', year: 2025, label: 'AB', slug: '#' },
+  { id: '2', name: 'project b', type: 'web', year: 2025, label: 'CD', slug: '#' },
+  { id: '3', name: 'project c', type: 'branding', year: 2024, label: 'EF', slug: '#' },
+  { id: '4', name: '36 days of type', type: 'typography', year: 2024, label: 'GH', slug: '#' },
+  { id: '5', name: 'project d', type: 'branding', year: 2024, label: 'IJ', slug: '#' },
+  { id: '6', name: 'touch designer', type: 'td', year: 2025, label: 'TD', slug: '#' },
+];
+---
+
+<Layout title="xawery — work" activePage="work">
+  <div class="content">
+    <h1 class="page-title">work</h1>
+
+    <div class="cat-tabs">
+      <button class="cat-tab active" data-cat="all">all</button>
+      <button class="cat-tab" data-cat="logo">logo</button>
+      <button class="cat-tab" data-cat="web">web</button>
+      <button class="cat-tab" data-cat="branding">branding</button>
+      <button class="cat-tab" data-cat="typography">typography</button>
+      <button class="cat-tab" data-cat="td">td</button>
+    </div>
+
+    <div class="work-grid">
+      {usePlaceholder ? (
+        placeholderProjects.map((p) => (
+          <div class="work-item" data-cat={p.type} style="cursor:pointer" data-slug={p.slug}>
+            <div class="work-thumb">{p.label}</div>
+            <div class="work-overlay">
+              <div class="work-overlay-title">{p.name}</div>
+              <div class="work-overlay-meta">
+                <span class="work-overlay-cat">{p.type}</span>
+                <span class="work-overlay-year">{p.year}</span>
+              </div>
+            </div>
+            <div class="work-meta">
+              <span class="work-meta-name">{p.name}</span>
+              <div class="work-meta-right">
+                <span class="work-meta-cat">{p.type}</span>
+                <span class="work-meta-year">{p.year}</span>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        projects.map((p) => {
+          const imgSrc = imageUrl(p.coverImage);
+          return (
+            <div class="work-item" data-cat={p.type} style="cursor:pointer" data-slug={`/project/${p.slug.current}`}>
+              <div class="work-thumb">
+                {imgSrc ? (
+                  <img src={imgSrc} alt={p.name} style="width:100%;height:100%;object-fit:cover" />
+                ) : (
+                  p.name.slice(0, 2).toUpperCase()
+                )}
+              </div>
+              <div class="work-overlay">
+                <div class="work-overlay-title">{p.name}</div>
+                <div class="work-overlay-meta">
+                  <span class="work-overlay-cat">{p.type}</span>
+                  <span class="work-overlay-year">{p.year}</span>
+                </div>
+              </div>
+              <div class="work-meta">
+                <span class="work-meta-name">{p.name}</span>
+                <div class="work-meta-right">
+                  <span class="work-meta-cat">{p.type}</span>
+                  <span class="work-meta-year">{p.year}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  </div>
+</Layout>
+
+<script>
+document.querySelectorAll('.cat-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = (btn as HTMLElement).dataset.cat;
+    document.querySelectorAll('.work-item').forEach(item => {
+      (item as HTMLElement).classList.toggle('hidden', f !== 'all' && (item as HTMLElement).dataset.cat !== f);
+    });
+  });
+});
+
+document.querySelectorAll('.work-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const slug = (item as HTMLElement).dataset.slug;
+    if (slug && slug !== '#') location.href = slug;
+  });
+});
+</script>

@@ -1,0 +1,80 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="xawery — contact" activePage="contact">
+  <div class="contact-wrap">
+    <div class="contact-left">
+      <h1 class="contact-title">let's work together.</h1>
+      <form id="contact-form" action="https://formspree.io/f/TWOJ_ID" method="POST">
+        <div class="field">
+          <label for="name">name</label>
+          <input type="text" id="name" name="name" placeholder="your name" required />
+        </div>
+        <div class="field">
+          <label for="email">email</label>
+          <input type="email" id="email" name="email" placeholder="your@email.com" required />
+        </div>
+        <div class="field">
+          <label for="subject">subject</label>
+          <input type="text" id="subject" name="subject" placeholder="what's it about?" />
+        </div>
+        <div class="field">
+          <label for="message">message</label>
+          <textarea id="message" name="message" placeholder="tell me about your project..." required></textarea>
+        </div>
+        <input type="text" name="_gotcha" style="display:none" />
+        <button type="submit" class="submit-btn" id="submit-btn">send &rarr;</button>
+        <p class="form-success" id="form-success">sent — i'll get back to you soon.</p>
+        <p class="form-error" id="form-error">something went wrong. email me directly.</p>
+      </form>
+    </div>
+    <div class="contact-right">
+      <div>
+        <p class="contact-section-label">email</p>
+        <button class="email-copy-btn copy-mail">hello@xawery.com<span class="email-copy-label">copy</span></button>
+      </div>
+      <div>
+        <p class="contact-section-label">socials</p>
+        <div class="social-list">
+          <a href="https://www.behance.net/xawerydaniel" target="_blank" class="social-item"><i class="fa-brands fa-behance fa-fw"></i><span class="social-name">behance</span><span class="social-arrow">&#8599;</span></a>
+          <a href="https://www.instagram.com/xawerydaniel" target="_blank" class="social-item"><i class="fa-brands fa-instagram fa-fw"></i><span class="social-name">instagram</span><span class="social-arrow">&#8599;</span></a>
+          <a href="https://www.linkedin.com/in/ksawerydaniel/" target="_blank" class="social-item"><i class="fa-brands fa-linkedin fa-fw"></i><span class="social-name">linkedin</span><span class="social-arrow">&#8599;</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+const form = document.getElementById('contact-form') as HTMLFormElement;
+const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+const successMsg = document.getElementById('form-success') as HTMLElement;
+const errorMsg = document.getElementById('form-error') as HTMLElement;
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'sending...';
+  successMsg.style.display = 'none';
+  errorMsg.style.display = 'none';
+  try {
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' },
+    });
+    if (res.ok) {
+      form.reset();
+      successMsg.style.display = 'block';
+      submitBtn.textContent = 'sent';
+    } else {
+      throw new Error();
+    }
+  } catch {
+    errorMsg.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'send \u2192';
+  }
+});
+</script>

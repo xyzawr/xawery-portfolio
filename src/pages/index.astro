@@ -1,17 +1,59 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="xawery — designer" isIndex={true}>
+  <div class="slider-wrap">
+    <div class="slider-track" id="track">
+      <div class="slide"><div class="slide-ph">AB</div><div class="slide-label"><div class="slide-label-name">project a</div><div class="slide-label-meta">logo design · 2025</div></div></div>
+      <div class="slide"><div class="slide-ph">CD</div><div class="slide-label"><div class="slide-label-name">project b</div><div class="slide-label-meta">web design · 2025</div></div></div>
+      <div class="slide"><div class="slide-ph">EF</div><div class="slide-label"><div class="slide-label-name">project c</div><div class="slide-label-meta">branding · 2024</div></div></div>
+      <div class="slide"><div class="slide-ph">GH</div><div class="slide-label"><div class="slide-label-name">36 days of type</div><div class="slide-label-meta">typography · 2024</div></div></div>
+      <div class="slide"><div class="slide-ph">TD</div><div class="slide-label"><div class="slide-label-name">touch designer</div><div class="slide-label-meta">generative · 2025</div></div></div>
+    </div>
+    <button class="arrow arrow-prev" id="prev">&larr;</button>
+    <button class="arrow arrow-next" id="next">&rarr;</button>
+    <div class="dots" id="dots"></div>
+  </div>
+</Layout>
+
+<script>
+const track = document.getElementById('track') as HTMLElement;
+const dotsEl = document.getElementById('dots') as HTMLElement;
+const slides = document.querySelectorAll('.slide');
+const N = slides.length;
+let ci = 0;
+let timer: ReturnType<typeof setInterval>;
+
+slides.forEach((_, i) => {
+  const d = document.createElement('button');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.addEventListener('click', () => go(i));
+  dotsEl.appendChild(d);
+});
+
+function go(n: number) {
+  ci = ((n % N) + N) % N;
+  track.style.transform = `translateX(-${ci * 100}%)`;
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === ci));
+  clearInterval(timer);
+  timer = setInterval(() => go(ci + 1), 4500);
+}
+
+document.getElementById('prev')!.addEventListener('click', () => go(ci - 1));
+document.getElementById('next')!.addEventListener('click', () => go(ci + 1));
+slides.forEach(s => s.addEventListener('click', () => { location.href = '/work'; }));
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') go(ci - 1);
+  if (e.key === 'ArrowRight') go(ci + 1);
+});
+
+let tx = 0;
+track.addEventListener('touchstart', (e) => { tx = (e as TouchEvent).touches[0].clientX; }, { passive: true });
+track.addEventListener('touchend', (e) => {
+  const d = (e as TouchEvent).changedTouches[0].clientX - tx;
+  if (Math.abs(d) > 40) go(d < 0 ? ci + 1 : ci - 1);
+});
+
+go(0);
+</script>
