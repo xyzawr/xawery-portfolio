@@ -575,6 +575,7 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
   padding-left: var(--gap);
+  margin-top: var(--gap);
 }
 .project-cover-ph {
   grid-column: 1; grid-row: 1;
@@ -583,6 +584,10 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
   display: flex; align-items: center; justify-content: center;
   font-size: 5rem; font-weight: 700;
   color: rgba(255,255,255,.08); letter-spacing: -.04em;
+  overflow: hidden;
+}
+.project-cover-ph > img {
+  width: 100%; height: 100%; object-fit: cover; display: block; flex-shrink: 0;
 }
 [data-theme="dark"] .project-cover-ph { background: #1c1c1c; }
 .cover-thumbs-wrap { display: none; }
@@ -633,7 +638,9 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
   aspect-ratio: 1/1; background: #d4d4d4;
   cursor: pointer; opacity: .45;
   transition: opacity .2s;
+  overflow: hidden;
 }
+.cover-thumb > img { width: 100%; height: 100%; object-fit: cover; display: block; }
 [data-theme="dark"] .cover-thumb { background: #1c1c1c; }
 .cover-thumb:hover { opacity: .75; }
 .cover-thumb.active { opacity: 1; outline: 2px solid var(--blue); outline-offset: -2px; }
@@ -664,11 +671,12 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
 }
 .cover-lb.open { display: flex; }
 .cover-lb-img {
-  width: min(80vh, 80vw); aspect-ratio: 1/1;
-  background: #1a1a1a;
+  max-width: 90vw; max-height: 90vh;
   display: flex; align-items: center; justify-content: center;
-  font-size: 5rem; font-weight: 700;
-  color: rgba(255,255,255,.08); letter-spacing: -.04em;
+}
+.cover-lb-img img {
+  max-width: 90vw; max-height: 90vh;
+  object-fit: contain; display: block;
 }
 
 .project-gallery {
@@ -678,11 +686,17 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
 }
 .project-gallery-ph {
   width: 100%; background: #d4d4d4;
+  position: relative; overflow: hidden;
+  height: 0;
+}
+.project-gallery-ph img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 [data-theme="dark"] .project-gallery-ph { background: #1c1c1c; }
-.project-gallery-ph.ph-tall  { aspect-ratio: 2/3; }
-.project-gallery-ph.ph-wide  { aspect-ratio: 4/3; }
-.project-gallery-ph.ph-square { aspect-ratio: 1/1; }
+.project-gallery-ph.ph-tall   { padding-bottom: 150%; }
+.project-gallery-ph.ph-wide   { padding-bottom: 75%; }
+.project-gallery-ph.ph-square { padding-bottom: 100%; }
 
 /* =============================================
    RESPONSIVE

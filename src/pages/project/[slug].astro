@@ -89,12 +89,18 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
       <button class="cover-arrow cover-next">&rarr;</button>
     </div>
     <div class="cover-thumbs" id="cover-thumbs">
+      {coverSrc && (
+        <div class="cover-thumb active" data-index={0} data-src={coverSrc}>
+          <img src={coverSrc} alt={project.name} style="width:100%;height:100%;object-fit:cover" />
+        </div>
+      )}
       {shownThumbs.map((img, i) => {
         const src = imageUrl(img);
+        const idx = coverSrc ? i + 1 : i;
         return (
           <div
-            class={`cover-thumb${i === 0 ? ' active' : ''}${i === MAX_THUMBS - 1 && extraCount > 0 ? ' cover-thumb-more' : ''}`}
-            data-index={i}
+            class={`cover-thumb${i === MAX_THUMBS - 1 && extraCount > 0 ? ' cover-thumb-more' : ''}`}
+            data-index={idx}
             data-src={src}
           >
             {i === MAX_THUMBS - 1 && extraCount > 0 ? (
@@ -142,18 +148,6 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
     </div>
   </div>
 
-  {galleryImages.length > 0 && (
-    <div class="project-gallery">
-      {galleryImages.map((img) => {
-        const src = imageUrl(img);
-        return src ? (
-          <img src={src} alt={img.alt || ''} class="project-gallery-ph ph-wide" style="object-fit:cover" />
-        ) : (
-          <div class="project-gallery-ph ph-wide"></div>
-        );
-      })}
-    </div>
-  )}
 </Layout>
 
 <script>
@@ -171,11 +165,14 @@ function goTo(n: number) {
   current = ((n % Math.max(allImages.length, 1)) + Math.max(allImages.length, 1)) % Math.max(allImages.length, 1);
   thumbEls.forEach((t, i) => t.classList.toggle('active', i === current));
   const src = allImages[current];
+  // update main cover image
+  const coverImg = document.querySelector('#cover-ph > img') as HTMLImageElement | null;
+  if (coverImg && src) coverImg.src = src;
+  // update lightbox image
   lbImg.innerHTML = '';
   if (src) {
     const img = document.createElement('img');
     img.src = src;
-    img.style.cssText = 'width:100%;height:100%;object-fit:contain';
     lbImg.appendChild(img);
   }
 }
