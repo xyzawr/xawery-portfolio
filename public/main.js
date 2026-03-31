@@ -1,3 +1,7 @@
+/* PROTECT IMAGES */
+document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+document.addEventListener('dragstart', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+
 const MAIL = 'hello@xawery.com';
 const toast = document.getElementById('toast');
 
@@ -38,6 +42,19 @@ if (!document.querySelector('.page')) {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   }));
 }
+
+/* GRID ENTRANCE ANIMATION */
+const gridObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); gridObserver.unobserve(e.target); }
+  });
+}, { threshold: 0.05 });
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  document.querySelectorAll('.grid-item').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.07}s`;
+    gridObserver.observe(el);
+  });
+}));
 
 /* BURGER */
 const burger = document.getElementById('burger');

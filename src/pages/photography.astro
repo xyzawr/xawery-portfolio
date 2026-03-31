@@ -1,36 +1,54 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { sanityClient } from '../sanity/client';
-import { imageUrl } from '../sanity/client';
+import { sanityClient, imageUrl } from '../sanity/client';
 
-interface Photo {
+interface Trip {
   _id: string;
-  image?: { asset?: { _ref?: string } };
-  alt?: string;
-  category?: string;
+  name: string;
+  slug: { current: string };
+  year?: number;
+  location?: string;
+  coverImage?: { asset?: { _ref?: string } };
 }
 
-let photos: Photo[] = [];
+let trips: Trip[] = [];
+
+interface TripWithPhotos extends Trip {
+  photos?: Array<{ _key?: string; asset?: { _ref?: string }; alt?: string }>;
+}
+
+let tripsWithPhotos: TripWithPhotos[] = [];
 
 try {
   const projectId = import.meta.env.SANITY_PROJECT_ID;
   if (projectId) {
-    photos = await sanityClient.fetch<Photo[]>(
-      `*[_type == "photo"] | order(order asc) { _id, image, alt, category }`
-    );
+    [trips, tripsWithPhotos] = await Promise.all([
+      sanityClient.fetch<Trip[]>(`*[_type == "trip"] | order(order asc, year desc) { _id, name, slug, year, location, coverImage }`),
+      sanityClient.fetch<TripWithPhotos[]>(`*[_type == "trip"] { coverImage, photos[]{ _key, asset, alt } }`),
+    ]);
   }
 } catch {
-  // fall through to placeholder
+  // fall through
 }
 
-const usePlaceholder = !photos || photos.length === 0;
-
-const placeholderCats = ['trips','city','people','trips','misc','city','trips','people','city','misc','trips','people'];
+// Flatten cover + all photos from all trips with trip name, shuffle
+type AnyPhoto = { asset?: { _ref?: string }; alt?: string; tripName?: string };
+const allPhotos: AnyPhoto[] = tripsWithPhotos.flatMap(t => [
+  ...(t.coverImage?.asset?._ref ? [{ ...t.coverImage, tripName: t.name }] : []),
+  ...(t.photos || []).map(p => ({ ...p, tripName: t.name })),
+]).filter(p => p.asset?._ref);
+for (let i = allPhotos.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [allPhotos[i], allPhotos[j]] = [allPhotos[j], allPhotos[i]];
+}
 ---
 
 <Layout title="xawery — photography" activePage="photography">
   <div class="lb" id="lb">
-    <button class="lb-close" id="lb-close">&#x2715; close</button>
+    <div class="lb-controls">
+      <button class="lb-toggle" id="lb-toggle">◐ light</button>
+      <button class="lb-close" id="lb-close">&#x2715; close</button>
+    </div>
     <button class="lb-nav lb-prev" id="lb-prev">&larr;</button>
     <div class="lb-ph" id="lb-img"></div>
     <button class="lb-nav lb-next" id="lb-next">&rarr;</button>
@@ -41,54 +59,83 @@ const placeholderCats = ['trips','city','people','trips','misc','city','trips','
     <h1 class="page-title">photography</h1>
 
     <div class="cat-tabs">
-      <button class="cat-tab active" data-cat="all">all</button>
-      <button class="cat-tab" data-cat="trips">trips</button>
-      <button class="cat-tab" data-cat="city">city</button>
-      <button class="cat-tab" data-cat="people">people</button>
-      <button class="cat-tab" data-cat="misc">misc</button>
+      <button class="cat-tab active" data-tab="all">all</button>
+      <button class="cat-tab" data-tab="trips">trips</button>
     </div>
 
-    <div class="photo-grid">
-      {usePlaceholder ? (
-        placeholderCats.map((cat) => (
-          <div class="photo-item" data-cat={cat}>
-            <div class="photo-ph"></div>
-            <div class="photo-hover"><span>&#8599;</span></div>
+    <!-- ALL: flat grid of all photos from all trips (shuffled) -->
+    <div class="photo-grid" id="tab-all">
+      {allPhotos.map((p) => {
+        const imgSrc = imageUrl(p);
+        return (
+          <div class="photo-item grid-item" data-src={imgSrc}>
+            <img class="photo-ph" src={imgSrc} alt={p.alt || ''} style="width:100%;display:block" />
+            {p.tripName && (
+              <div class="work-meta">
+                <span class="work-meta-name">{p.tripName}</span>
+              </div>
+            )}
           </div>
-        ))
-      ) : (
-        photos.map((p) => {
-          const imgSrc = imageUrl(p.image);
+        );
+      })}
+    </div>
+
+    <!-- TRIPS: grid of trip cards -->
+    <div class="work-grid hidden" id="tab-trips">
+      {trips.map((t) => {
+          const src = imageUrl(t.coverImage);
           return (
-            <div class="photo-item" data-cat={p.category || 'misc'} data-src={imgSrc}>
-              {imgSrc ? (
-                <img class="photo-ph" src={imgSrc} alt={p.alt || ''} style="width:100%;display:block" />
-              ) : (
-                <div class="photo-ph"></div>
-              )}
-              <div class="photo-hover"><span>&#8599;</span></div>
+            <div class="work-item trip-card grid-item" style="cursor:pointer" data-slug={`/trip/${t.slug.current}`}>
+              <div class="work-thumb">
+                {src ? (
+                  <img src={src} alt={t.name} style="width:100%;height:100%;object-fit:cover" />
+                ) : (
+                  t.name.slice(0, 2).toUpperCase()
+                )}
+              </div>
+              <div class="work-overlay">
+                <div class="work-overlay-title">{t.name}</div>
+                <div class="work-overlay-meta">
+                  {t.location && <span class="work-overlay-cat">{t.location}</span>}
+                  {t.year && <span class="work-overlay-year">{t.year}</span>}
+                </div>
+              </div>
+              <div class="work-meta">
+                <span class="work-meta-name">{t.name}</span>
+                <div class="work-meta-right">
+                  {t.location && <span class="work-meta-cat">{t.location}</span>}
+                  {t.year && <span class="work-meta-year">{t.year}</span>}
+                </div>
+              </div>
             </div>
           );
-        })
-      )}
+        })}
     </div>
   </div>
 </Layout>
 
 <script>
-const allItems = Array.from(document.querySelectorAll('.photo-item'));
-
+// Tab switching
 document.querySelectorAll('.cat-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    const cat = (tab as HTMLElement).dataset.cat;
-    allItems.forEach(item => {
-      (item as HTMLElement).classList.toggle('hidden', cat !== 'all' && (item as HTMLElement).dataset.cat !== cat);
-    });
+    const t = (tab as HTMLElement).dataset.tab;
+    (document.getElementById('tab-all') as HTMLElement).classList.toggle('hidden', t !== 'all');
+    (document.getElementById('tab-trips') as HTMLElement).classList.toggle('hidden', t !== 'trips');
   });
 });
 
+// Trip cards navigation
+document.querySelectorAll('#tab-trips .work-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const slug = (item as HTMLElement).dataset.slug;
+    if (slug) location.href = slug;
+  });
+});
+
+// Photo lightbox
+const allItems = Array.from(document.querySelectorAll('.photo-item'));
 const lb = document.getElementById('lb')!;
 const lbCounter = document.getElementById('lb-counter')!;
 const lbImg = document.getElementById('lb-img')!;
@@ -103,12 +150,17 @@ function updateLb() {
   if (src) {
     const img = document.createElement('img');
     img.src = src;
-    img.style.cssText = 'width:100%;height:100%;object-fit:contain';
+    img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;display:block';
     lbImg.appendChild(img);
   }
 }
 
 document.getElementById('lb-close')!.addEventListener('click', () => lb.classList.remove('open'));
+const lbToggle = document.getElementById('lb-toggle')!;
+lbToggle.addEventListener('click', () => {
+  lb.classList.toggle('lb-light');
+  lbToggle.textContent = lb.classList.contains('lb-light') ? '◐ dark' : '◐ light';
+});
 document.getElementById('lb-prev')!.addEventListener('click', () => { lbIdx = (lbIdx - 1 + lbItems.length) % lbItems.length; updateLb(); });
 document.getElementById('lb-next')!.addEventListener('click', () => { lbIdx = (lbIdx + 1) % lbItems.length; updateLb(); });
 lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
@@ -122,9 +174,8 @@ document.addEventListener('keydown', e => {
 
 allItems.forEach(item => {
   item.addEventListener('click', () => {
-    const visible = allItems.filter(it => !(it as HTMLElement).classList.contains('hidden'));
-    lbItems = visible;
-    lbIdx = visible.indexOf(item);
+    lbItems = allItems.filter(it => !(it as HTMLElement).classList.contains('hidden'));
+    lbIdx = lbItems.indexOf(item);
     updateLb();
     lb.classList.add('open');
   });
