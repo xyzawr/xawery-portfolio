@@ -66,9 +66,9 @@ for (let i = allPhotos.length - 1; i > 0; i--) {
     <!-- ALL: flat grid of all photos from all trips (shuffled) -->
     <div class="photo-grid" id="tab-all">
       {allPhotos.map((p) => {
-        const imgSrc = imageUrl(p);
+        const imgSrc = imageUrl(p, { w: 900, q: 85 });
         return (
-          <div class="photo-item grid-item" data-src={imgSrc}>
+          <div class="photo-item grid-item" data-src={imageUrl(p)}>
             <img class="photo-ph" src={imgSrc} alt={p.alt || ''} style="width:100%;display:block" />
             {p.tripName && (
               <div class="work-meta">
@@ -83,7 +83,7 @@ for (let i = allPhotos.length - 1; i > 0; i--) {
     <!-- TRIPS: grid of trip cards -->
     <div class="work-grid hidden" id="tab-trips">
       {trips.map((t) => {
-          const src = imageUrl(t.coverImage);
+          const src = imageUrl(t.coverImage, { w: 800, q: 85 });
           return (
             <div class="work-item trip-card grid-item" style="cursor:pointer" data-slug={`/trip/${t.slug.current}`}>
               <div class="work-thumb">

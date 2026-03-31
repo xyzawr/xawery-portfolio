@@ -48,7 +48,7 @@ const placeholders = [
         ))
       ) : (
         projects.map(p => {
-          const src = imageUrl(p.coverImage);
+          const src = imageUrl(p.coverImage, { w: 900, q: 85 });
           return (
             <div class="slide" data-slug={`/project/${p.slug.current}`}>
               {src ? (

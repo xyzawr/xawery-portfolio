@@ -68,7 +68,7 @@ const placeholderProjects = [
         ))
       ) : (
         projects.map((p) => {
-          const imgSrc = imageUrl(p.coverImage);
+          const imgSrc = imageUrl(p.coverImage, { w: 800, q: 85 });
           return (
             <div class="work-item grid-item" data-cat={p.type} data-name={p.name.toLowerCase()} style="cursor:pointer" data-slug={`/project/${p.slug.current}`}>
               <div class="work-thumb">

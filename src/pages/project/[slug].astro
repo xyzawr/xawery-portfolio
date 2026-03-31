@@ -60,7 +60,7 @@ if (!project) {
   return Astro.redirect('/work');
 }
 
-const coverSrc = imageUrl(project.coverImage);
+const coverSrc = imageUrl(project.coverImage, { w: 1400, q: 90 });
 const galleryImages: GalleryImage[] = project.gallery || [];
 const MAX_THUMBS = 8;
 const shownThumbs = galleryImages.slice(0, MAX_THUMBS);
@@ -98,7 +98,7 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
         </div>
       )}
       {shownThumbs.map((img, i) => {
-        const src = imageUrl(img);
+        const src = imageUrl(img, { w: 1400, q: 90 });
         const idx = coverSrc ? i + 1 : i;
         return (
           <div
