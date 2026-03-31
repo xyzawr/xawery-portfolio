@@ -1,15 +1,69 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { sanityClient, imageUrl } from '../sanity/client';
+
+interface Project {
+  _id: string;
+  name: string;
+  slug: { current: string };
+  year?: number;
+  type?: string;
+  coverImage?: { asset?: { _ref?: string } };
+}
+
+let projects: Project[] = [];
+
+try {
+  const projectId = import.meta.env.SANITY_PROJECT_ID;
+  if (projectId) {
+    projects = await sanityClient.fetch<Project[]>(
+      `*[_type == "project"] | order(order asc, year desc) { _id, name, slug, year, type, coverImage }`
+    );
+  }
+} catch {
+  // fall through to placeholders
+}
+
+const usePlaceholder = !projects || projects.length === 0;
+
+const placeholders = [
+  { name: 'project a', meta: 'logo design · 2025', label: 'AB', slug: '/work' },
+  { name: 'project b', meta: 'web design · 2025', label: 'CD', slug: '/work' },
+  { name: '36 days of type', meta: 'typography · 2024', label: 'GH', slug: '/work' },
+];
 ---
 
 <Layout title="xawery — designer" isIndex={true}>
   <div class="slider-wrap">
     <div class="slider-track" id="track">
-      <div class="slide"><div class="slide-ph">AB</div><div class="slide-label"><div class="slide-label-name">project a</div><div class="slide-label-meta">logo design · 2025</div></div></div>
-      <div class="slide"><div class="slide-ph">CD</div><div class="slide-label"><div class="slide-label-name">project b</div><div class="slide-label-meta">web design · 2025</div></div></div>
-      <div class="slide"><div class="slide-ph">EF</div><div class="slide-label"><div class="slide-label-name">project c</div><div class="slide-label-meta">branding · 2024</div></div></div>
-      <div class="slide"><div class="slide-ph">GH</div><div class="slide-label"><div class="slide-label-name">36 days of type</div><div class="slide-label-meta">typography · 2024</div></div></div>
-      <div class="slide"><div class="slide-ph">TD</div><div class="slide-label"><div class="slide-label-name">touch designer</div><div class="slide-label-meta">generative · 2025</div></div></div>
+      {usePlaceholder ? (
+        placeholders.map(p => (
+          <div class="slide" data-slug={p.slug}>
+            <div class="slide-ph">{p.label}</div>
+            <div class="slide-label">
+              <div class="slide-label-name">{p.name}</div>
+              <div class="slide-label-meta">{p.meta}</div>
+            </div>
+          </div>
+        ))
+      ) : (
+        projects.map(p => {
+          const src = imageUrl(p.coverImage);
+          return (
+            <div class="slide" data-slug={`/project/${p.slug.current}`}>
+              {src ? (
+                <img src={src} alt={p.name} style="width:100%;height:100%;object-fit:cover;display:block" />
+              ) : (
+                <div class="slide-ph">{p.name.slice(0, 2).toUpperCase()}</div>
+              )}
+              <div class="slide-label">
+                <div class="slide-label-name">{p.name}</div>
+                <div class="slide-label-meta">{p.type}{p.year ? ` · ${p.year}` : ''}</div>
+              </div>
+            </div>
+          );
+        })
+      )}
     </div>
     <button class="arrow arrow-prev" id="prev">&larr;</button>
     <button class="arrow arrow-next" id="next">&rarr;</button>
@@ -42,7 +96,10 @@ function go(n: number) {
 
 document.getElementById('prev')!.addEventListener('click', () => go(ci - 1));
 document.getElementById('next')!.addEventListener('click', () => go(ci + 1));
-slides.forEach(s => s.addEventListener('click', () => { location.href = '/work'; }));
+slides.forEach(s => s.addEventListener('click', () => {
+  const slug = (s as HTMLElement).dataset.slug;
+  if (slug) location.href = slug;
+}));
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') go(ci - 1);
   if (e.key === 'ArrowRight') go(ci + 1);

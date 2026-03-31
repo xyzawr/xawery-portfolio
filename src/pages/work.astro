@@ -46,9 +46,7 @@ const placeholderProjects = [
       <button class="cat-tab active" data-cat="all">all</button>
       <button class="cat-tab" data-cat="logo">logo</button>
       <button class="cat-tab" data-cat="web">web</button>
-      <button class="cat-tab" data-cat="branding">branding</button>
       <button class="cat-tab" data-cat="typography">typography</button>
-      <button class="cat-tab" data-cat="td">td</button>
     </div>
 
     <div class="work-grid">
@@ -76,7 +74,7 @@ const placeholderProjects = [
         projects.map((p) => {
           const imgSrc = imageUrl(p.coverImage);
           return (
-            <div class="work-item" data-cat={p.type} style="cursor:pointer" data-slug={`/project/${p.slug.current}`}>
+            <div class="work-item grid-item" data-cat={p.type} data-name={p.name.toLowerCase()} style="cursor:pointer" data-slug={`/project/${p.slug.current}`}>
               <div class="work-thumb">
                 {imgSrc ? (
                   <img src={imgSrc} alt={p.name} style="width:100%;height:100%;object-fit:cover" />
@@ -113,7 +111,9 @@ document.querySelectorAll('.cat-tab').forEach(btn => {
     btn.classList.add('active');
     const f = (btn as HTMLElement).dataset.cat;
     document.querySelectorAll('.work-item').forEach(item => {
-      (item as HTMLElement).classList.toggle('hidden', f !== 'all' && (item as HTMLElement).dataset.cat !== f);
+      const el = item as HTMLElement;
+      const match = f === 'all' || el.dataset.cat === f || el.dataset.name === f;
+      el.classList.toggle('hidden', !match);
     });
   });
 });

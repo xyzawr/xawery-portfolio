@@ -31,9 +31,7 @@ export const project = defineType({
         list: [
           { title: 'Logo', value: 'logo' },
           { title: 'Web', value: 'web' },
-          { title: 'Branding', value: 'branding' },
           { title: 'Typography', value: 'typography' },
-          { title: 'Touch Designer', value: 'td' },
         ],
       },
     }),

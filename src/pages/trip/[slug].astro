@@ -1,74 +1,63 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { sanityClient } from '../../sanity/client';
-import { imageUrl } from '../../sanity/client';
+import { sanityClient, imageUrl } from '../../sanity/client';
 
 export async function getStaticPaths() {
   const projectId = import.meta.env.SANITY_PROJECT_ID;
   if (!projectId) return [];
-
   try {
-    const projects = await sanityClient.fetch<Array<{ slug: { current: string } }>>(
-      `*[_type == "project"]{ slug }`
+    const trips = await sanityClient.fetch<Array<{ slug: { current: string } }>>(
+      `*[_type == "trip"]{ slug }`
     );
-    return projects.map((p) => ({
-      params: { slug: p.slug.current },
-    }));
+    return trips.map((t) => ({ params: { slug: t.slug.current } }));
   } catch {
     return [];
   }
 }
 
-interface GalleryImage {
+interface TripPhoto {
   _key?: string;
   asset?: { _ref?: string };
   alt?: string;
 }
 
-interface Project {
+interface Trip {
   _id: string;
   name: string;
   slug: { current: string };
   year?: number;
-  type?: string;
-  client?: string;
-  description?: string;
-  projectUrl?: string;
+  location?: string;
   coverImage?: { asset?: { _ref?: string } };
-  gallery?: GalleryImage[];
+  photos?: TripPhoto[];
 }
 
 const { slug } = Astro.params;
-
-let project: Project | null = null;
+let trip: Trip | null = null;
 
 try {
   const projectId = import.meta.env.SANITY_PROJECT_ID;
   if (projectId && slug) {
-    project = await sanityClient.fetch<Project>(
-      `*[_type == "project" && slug.current == $slug][0]{
-        _id, name, slug, year, type, client, description, projectUrl,
-        coverImage, gallery[]{ _key, asset, alt }
+    trip = await sanityClient.fetch<Trip>(
+      `*[_type == "trip" && slug.current == $slug][0]{
+        _id, name, slug, year, location, coverImage,
+        photos[]{ _key, asset, alt }
       }`,
       { slug }
     );
   }
-} catch {
-  // fall through
-}
+} catch { /* fall through */ }
 
-if (!project) {
-  return Astro.redirect('/work');
-}
+if (!trip) return Astro.redirect('/photography');
 
-const coverSrc = imageUrl(project.coverImage);
-const galleryImages: GalleryImage[] = project.gallery || [];
+const coverSrc = imageUrl(trip.coverImage);
+const photos: TripPhoto[] = trip.photos || [];
 const MAX_THUMBS = 8;
-const shownThumbs = galleryImages.slice(0, MAX_THUMBS);
-const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MAX_THUMBS + 1 : 0;
+const shownThumbs = photos.slice(0, MAX_THUMBS);
+const extraCount = photos.length > MAX_THUMBS ? photos.length - MAX_THUMBS + 1 : 0;
 ---
 
-<Layout title={`xawery — ${project.name}`} activePage="work">
+<Layout title={`xawery — ${trip.name}`} activePage="photography">
+  <!-- Lightbox -->
   <div class="cover-lb" id="cover-lb">
     <div class="lb-controls">
       <button class="lb-toggle" id="cover-lb-toggle">◐ light</button>
@@ -76,7 +65,7 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
     </div>
     <button class="lb-nav lb-prev" id="cover-lb-prev">&larr;</button>
     <div class="cover-lb-img" id="cover-lb-img">
-      {coverSrc && <img src={coverSrc} alt={project.name} style="width:100%;height:100%;object-fit:contain" />}
+      {coverSrc && <img src={coverSrc} alt={trip.name} />}
     </div>
     <button class="lb-nav lb-next" id="cover-lb-next">&rarr;</button>
     <span class="lb-counter" id="cover-lb-counter"></span>
@@ -85,21 +74,22 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
   <div class="project-wrap">
     <div class="project-cover-ph" id="cover-ph">
       {coverSrc ? (
-        <img src={coverSrc} alt={project.name} />
+        <img src={coverSrc} alt={trip.name} />
       ) : (
-        project.name.slice(0, 2).toUpperCase()
+        trip.name.slice(0, 2).toUpperCase()
       )}
       <button class="cover-arrow cover-prev">&larr;</button>
       <button class="cover-arrow cover-next">&rarr;</button>
     </div>
+
     <div class="cover-thumbs" id="cover-thumbs">
       {coverSrc && (
         <div class="cover-thumb active" data-index={0} data-src={coverSrc}>
-          <img src={coverSrc} alt={project.name} style="width:100%;height:100%;object-fit:cover" />
+          <img src={coverSrc} alt={trip.name} style="width:100%;height:100%;object-fit:cover" />
         </div>
       )}
-      {shownThumbs.map((img, i) => {
-        const src = imageUrl(img);
+      {shownThumbs.map((p, i) => {
+        const src = imageUrl(p);
         const idx = coverSrc ? i + 1 : i;
         return (
           <div
@@ -110,48 +100,36 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
             {i === MAX_THUMBS - 1 && extraCount > 0 ? (
               `+${extraCount}`
             ) : src ? (
-              <img src={src} alt={img.alt || ''} style="width:100%;height:100%;object-fit:cover" />
+              <img src={src} alt={p.alt || ''} style="width:100%;height:100%;object-fit:cover" />
             ) : null}
           </div>
         );
       })}
     </div>
+
     <div class="project-info">
       <div class="project-header">
-        <h1 class="project-name">{project.name}</h1>
+        <h1 class="project-name">{trip.name}</h1>
         <div class="project-nav">
-          <a href="/work" class="project-nav-btn">&larr;</a>
+          <a href="/photography" class="project-nav-btn">&larr;</a>
         </div>
       </div>
       <div class="about-meta">
-        {project.year && (
+        {trip.year && (
           <div class="about-row">
             <span class="about-row-label">year</span>
-            <span class="about-row-val">{project.year}</span>
+            <span class="about-row-val">{trip.year}</span>
           </div>
         )}
-        {project.type && (
+        {trip.location && (
           <div class="about-row">
-            <span class="about-row-label">type</span>
-            <span class="about-row-val">{project.type}</span>
-          </div>
-        )}
-        {project.client && (
-          <div class="about-row">
-            <span class="about-row-label">client</span>
-            <span class="about-row-val">{project.client}</span>
+            <span class="about-row-label">location</span>
+            <span class="about-row-val">{trip.location}</span>
           </div>
         )}
       </div>
-      {project.description && (
-        <p class="project-desc" set:html={project.description.replace(/\n/g, '<br />')}></p>
-      )}
-      {project.projectUrl && (
-        <a href={project.projectUrl} target="_blank" class="project-link">visit project &#8599;</a>
-      )}
     </div>
   </div>
-
 </Layout>
 
 <script>
@@ -183,7 +161,6 @@ function goTo(n: number) {
 }
 
 thumbEls.forEach((t, i) => t.addEventListener('click', () => goTo(i)));
-
 document.querySelector('.cover-prev')?.addEventListener('click', () => goTo(current - 1));
 document.querySelector('.cover-next')?.addEventListener('click', () => goTo(current + 1));
 

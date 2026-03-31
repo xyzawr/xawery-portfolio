@@ -8,13 +8,13 @@ export const sanityClient = projectId
   ? createClient({
       projectId,
       dataset,
-      useCdn: true,
+      useCdn: false,
       apiVersion: '2024-01-01',
     })
   : createClient({
       projectId: 'placeholder',
       dataset,
-      useCdn: true,
+      useCdn: false,
       apiVersion: '2024-01-01',
     });
 
