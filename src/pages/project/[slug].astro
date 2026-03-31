@@ -1,7 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { sanityClient } from '../../sanity/client';
-import { imageUrl } from '../../sanity/client';
+import { sanityClient, imageUrl } from '../../sanity/client';
 
 export async function getStaticPaths() {
   const projectId = import.meta.env.SANITY_PROJECT_ID;

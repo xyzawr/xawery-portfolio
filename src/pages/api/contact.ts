@@ -21,6 +21,15 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
+  const honeypot = String(data.get('_gotcha') || '');
+  if (honeypot) {
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200, headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
   const resend = new Resend(import.meta.env.RESEND_API_KEY);
   const to = import.meta.env.CONTACT_TO || 'hello@xawery.com';
 
@@ -30,10 +39,10 @@ export const POST: APIRoute = async ({ request }) => {
     replyTo: email,
     subject: `[xawery.com] Nowe zapytanie od ${name}`,
     html: `
-      <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
-      ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ''}
+      <p><strong>From:</strong> ${esc(name)} &lt;${esc(email)}&gt;</p>
+      ${subject ? `<p><strong>Subject:</strong> ${esc(subject)}</p>` : ''}
       <p><strong>Message:</strong></p>
-      <p>${message.replace(/\n/g, '<br>')}</p>
+      <p>${esc(message).replace(/\n/g, '<br>')}</p>
     `,
   });
 

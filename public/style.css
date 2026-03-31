@@ -363,7 +363,6 @@ img.photo-ph { aspect-ratio: auto; }
 [data-theme="dark"] .photo-item:nth-child(5n+3) .photo-ph { background: #181e1c; }
 [data-theme="dark"] .photo-item:nth-child(5n+4) .photo-ph { background: #1e1818; }
 [data-theme="dark"] .photo-item:nth-child(5n+5) .photo-ph { background: #181c22; }
-.photo-item:hover .photo-ph { transform: scale(1.02); }
 
 /* Grid entrance animation */
 .grid-item {
@@ -428,9 +427,8 @@ img.photo-ph { aspect-ratio: auto; }
   display: flex; flex-direction: column; gap: var(--gap);
 }
 .about-photo .page-title { margin-bottom: 0; }
-.about-photo-ph { flex: 1; }
 .about-photo-ph {
-  width: 100%; aspect-ratio: 5/4; min-height: unset;
+  flex: 1; width: 100%; aspect-ratio: 5/4;
   background: #d4d4d4;
   display: flex; align-items: center; justify-content: center;
   font-size: 5rem; font-weight: 700;
@@ -608,7 +606,7 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
 }
 .project-cover-ph {
   grid-column: 1; grid-row: 1;
-  width: 100%;
+  width: 100%; position: relative; cursor: zoom-in;
   background: #d4d4d4;
   display: flex; align-items: center; justify-content: center;
   font-size: 5rem; font-weight: 700;
@@ -619,7 +617,6 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
   width: 100%; height: auto; display: block;
 }
 [data-theme="dark"] .project-cover-ph { background: #1c1c1c; }
-.cover-thumbs-wrap { display: none; }
 .project-info {
   grid-column: 2; grid-row: 1;
   padding: 0 var(--gap) 0;
@@ -682,7 +679,6 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
 }
 
 /* cover arrows */
-.project-cover-ph { position: relative; cursor: zoom-in; }
 .cover-arrow {
   position: absolute; top: 50%; transform: translateY(-50%);
   background: none; border: none;
@@ -762,9 +758,8 @@ form { display: flex; flex-direction: column; gap: 1.2rem; }
 @media (max-width: 768px) {
   .about-wrap { grid-template-columns: 1fr; }
   .about-photo { padding: var(--gap) var(--gap) 0; border-right: none; }
-  .about-text { padding-top: var(--gap); }
   .about-photo-ph { aspect-ratio: 5/4; }
-  .about-text { border-top: none; }
+  .about-text { padding-top: var(--gap); border-top: none; }
   .contact-wrap { grid-template-columns: 1fr; }
   .contact-left { border-right: none; }
   .contact-right { padding-top: var(--gap); }

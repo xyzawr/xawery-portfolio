@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { sanityClient } from '../sanity/client';
-import { imageUrl } from '../sanity/client';
+import { sanityClient, imageUrl } from '../sanity/client';
 
 interface Project {
   _id: string;
@@ -13,7 +12,6 @@ interface Project {
 }
 
 let projects: Project[] = [];
-let sanityError = false;
 
 try {
   const projectId = import.meta.env.SANITY_PROJECT_ID;
@@ -22,9 +20,7 @@ try {
       `*[_type == "project"] | order(order asc, year desc) { _id, name, slug, year, type, coverImage }`
     );
   }
-} catch {
-  sanityError = true;
-}
+} catch { /* fall through */ }
 
 const usePlaceholder = !projects || projects.length === 0;
 
