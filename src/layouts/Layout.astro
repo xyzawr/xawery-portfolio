@@ -117,5 +117,45 @@ const { title = 'xawery — designer', isIndex = false, activePage = '' } = Astr
 )}
 
 <script src="/main.js" is:inline></script>
+
+<!-- Cookie banner -->
+<div id="cookie-banner">
+  <p class="cookie-text">this site uses cookies to analyse traffic via google analytics.</p>
+  <div class="cookie-btns">
+    <button id="cookie-necessary">only necessary</button>
+    <button id="cookie-accept">accept all</button>
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  var consent = localStorage.getItem('cookie-consent');
+  if (consent === 'all') { loadGA(); return; }
+  if (consent === 'necessary') return;
+  document.getElementById('cookie-banner').classList.add('visible');
+
+  document.getElementById('cookie-accept').addEventListener('click', function() {
+    localStorage.setItem('cookie-consent', 'all');
+    document.getElementById('cookie-banner').classList.remove('visible');
+    loadGA();
+  });
+  document.getElementById('cookie-necessary').addEventListener('click', function() {
+    localStorage.setItem('cookie-consent', 'necessary');
+    document.getElementById('cookie-banner').classList.remove('visible');
+  });
+
+  function loadGA() {
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=G-0L7HZDKK0S';
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', 'G-0L7HZDKK0S');
+  }
+})();
+</script>
 </body>
 </html>
