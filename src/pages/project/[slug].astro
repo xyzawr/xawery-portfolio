@@ -61,23 +61,29 @@ if (!project) {
 }
 
 const coverSrc = imageUrl(project.coverImage, { w: 1400, q: 90 });
+const ogImage = imageUrl(project.coverImage, { w: 1200, q: 85 });
 const galleryImages: GalleryImage[] = project.gallery || [];
 const MAX_THUMBS = 8;
 const shownThumbs = galleryImages.slice(0, MAX_THUMBS);
 const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MAX_THUMBS + 1 : 0;
 ---
 
-<Layout title={`xawery — ${project.name}`} activePage="work">
+<Layout
+  title={`xawery — ${project.name}`}
+  description={project.description ? project.description.slice(0, 155) : `${project.name} — project by xawery daniel.`}
+  ogImage={ogImage || undefined}
+  activePage="work"
+>
   <div class="cover-lb" id="cover-lb">
     <div class="lb-controls">
       <button class="lb-toggle" id="cover-lb-toggle">◐ light</button>
       <button class="lb-close" id="cover-lb-close">&#x2715; close</button>
     </div>
-    <button class="lb-nav lb-prev" id="cover-lb-prev">&larr;</button>
+    <button class="lb-nav lb-prev" id="cover-lb-prev" aria-label="previous">&larr;</button>
     <div class="cover-lb-img" id="cover-lb-img">
       {coverSrc && <img src={coverSrc} alt={project.name} style="width:100%;height:100%;object-fit:contain" />}
     </div>
-    <button class="lb-nav lb-next" id="cover-lb-next">&rarr;</button>
+    <button class="lb-nav lb-next" id="cover-lb-next" aria-label="next">&rarr;</button>
     <span class="lb-counter" id="cover-lb-counter"></span>
   </div>
 
@@ -109,7 +115,7 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
             {i === MAX_THUMBS - 1 && extraCount > 0 ? (
               `+${extraCount}`
             ) : src ? (
-              <img src={src} alt={img.alt || ''} style="width:100%;height:100%;object-fit:cover" />
+              <img src={src} alt={img.alt || ''} loading="lazy" style="width:100%;height:100%;object-fit:cover" />
             ) : null}
           </div>
         );
@@ -146,7 +152,7 @@ const extraCount = galleryImages.length > MAX_THUMBS ? galleryImages.length - MA
         <p class="project-desc" set:html={project.description.replace(/\n/g, '<br />')}></p>
       )}
       {project.projectUrl && (
-        <a href={project.projectUrl} target="_blank" class="project-link">visit project &#8599;</a>
+        <a href={project.projectUrl} target="_blank" rel="noopener noreferrer" class="project-link">visit project &#8599;</a>
       )}
     </div>
   </div>
