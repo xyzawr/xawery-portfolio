@@ -296,9 +296,8 @@ footer {
   gap: 18px;
 }
 .work-item { background: var(--bg); position: relative; overflow: hidden; aspect-ratio: 4/3; }
-.work-item.trip-card { aspect-ratio: unset; }
-.work-item.trip-card .work-thumb { aspect-ratio: unset; height: auto; }
-.work-item.trip-card .work-thumb img { width: 100%; height: auto; display: block; object-fit: unset; }
+.work-item.trip-card { aspect-ratio: 4/3; }
+.work-item.trip-card .work-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .work-item.trip-card .work-meta { display: none; }
 .work-item.hidden { display: none; }
 .work-thumb {
